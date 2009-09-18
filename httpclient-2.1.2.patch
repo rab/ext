@@ -1,0 +1,11 @@
+--- lib/httpclient.rb.orig	2007-10-31 21:44:34.000000000 -0400
++++ lib/httpclient.rb	2007-11-14 14:50:55.000000000 -0500
+@@ -1907,7 +1907,7 @@
+   def default_redirect_uri_callback(uri, res)
+     newuri = URI.parse(res.header['location'][0])
+     unless newuri.is_a?(URI::HTTP)
+-      newuri = uri + newuri
++      newuri = URI.join(uri, newuri)
+       STDERR.puts(
+         "could be a relative URI in location header which is not recommended")
+       STDERR.puts(
