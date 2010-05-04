@@ -42,6 +42,20 @@ def find_and_fix(code, vendor_name=nil, source=nil)
       else
         bad.pop
       end
+    elsif changed_attr.include?('discontinued')
+      if bad.last.discontinued?
+        good = bad.first
+        gone = bad.pop
+      else
+        good = bad.last
+        gone = bad.shift
+      end
+      puts "Keeping #{good.id}, destroying discontinued #{gone.id}"
+      gone.destroy
+    elsif changed_attr.include?('trait_group') && bad.last.trait_group.nil?
+      gone = bad.pop
+      puts "Keeping #{bad.first.id} w/ trait_group #{bad.first.trait_group}, destroying ungrouped #{gone.id}"
+      gone.destroy
     else
       bad.pop
     end
@@ -50,7 +64,7 @@ def find_and_fix(code, vendor_name=nil, source=nil)
   bad
 end
 
-codes = Product.connection.select_all(%{select code, vendor_name, source from products where priority = 1 group by code, vendor_name, source having count(*) > 1}).map{|row| [row['code'],row['vendor_name'],row['source']]}
+codes = Product.connection.select_all(%{select code, vendor_name, source from products where priority = 1 group by code, vendor_name, source having count(*) > 1}).map{|row| [row['code'],row['vendor_name'],row['source']]}; codes.size
 
 codes.each {|code,vendor_name,source| find_and_fix code, vendor_name, source; puts}
 
